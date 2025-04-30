@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "llm-proxy-service"
+version = "0.1.0"
+description = "A FastAPI-based proxy service for LLM model requests using LiteLLM"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [
+    { include = "app" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.104.1"
+uvicorn = "^0.24.0"
+python-jose = "^3.3.0"
+python-dotenv = "^1.0.0"
+litellm = "^1.0.0"
+pydantic = "^2.4.2"
+pyyaml = "^6.0.1"
+PyJWT = "^2.8.0"
+cryptography = "^41.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+black = "^23.10.1"
+isort = "^5.12.0"
+mypy = "^1.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+llm-proxy = "app.main:app" 
+
