@@ -5,11 +5,22 @@ from dotenv import load_dotenv
 from .routes import router
 from .middleware.auth_middleware import AuthMiddleware
 from .middleware.url_rewrite import URLRewriteMiddleware
+from .config.phoenix_config import PhoenixConfig
+from phoenix.otel import register
 import logging
 import sys
 
 # Load environment variables
 load_dotenv()
+
+# Configure Phoenix
+PhoenixConfig.setup_environment()
+
+# Configure Phoenix tracer
+tracer_provider = register(
+    project_name=PhoenixConfig.PHOENIX_PROJECT_NAME,
+    auto_instrument=True  # Auto-instrument based on installed OI dependencies
+)
 
 # Configure logging
 logging.basicConfig(

@@ -37,23 +37,21 @@ class LLMService:
             completion_params["model"] = provider_name+"/"+model_name
 
             # Add provider-specific configuration
-            # completion_params["api_base"] = provider_config.api_base
-            # if provider_config.api_version:
-            #     completion_params["api_version"] = provider_config.api_version
-            
-            print("--------------------------------")
-            print(f"Completion params: {completion_params}")
-            print("--------------------------------")
+            completion_params["api_base"] = provider_config.api_base
+            if provider_config.api_version:
+                completion_params["api_version"] = provider_config.api_version
             
             # Set provider-specific API key
-            # if provider_name == "azure":
-            #     completion_params["api_key"] = os.getenv("AZURE_OPENAI_API_KEY")
-            # elif provider_name == "openai":
-            #     completion_params["api_key"] = os.getenv("OPENAI_API_KEY")
-            # elif provider_name == "anthropic":
-            #     completion_params["api_key"] = os.getenv("ANTHROPIC_API_KEY")
-            # elif provider_name == "gemini":
-            #     completion_params["api_key"] = os.getenv("GOOGLE_API_KEY")
+            if provider_name == "azure":
+                completion_params["api_key"] = os.getenv("AZURE_API_KEY")
+            elif provider_name == "openai":
+                completion_params["api_key"] = os.getenv("OPENAI_API_KEY")
+            elif provider_name == "anthropic":
+                completion_params["api_key"] = os.getenv("ANTHROPIC_API_KEY")
+            elif provider_name == "gemini":
+                completion_params["api_key"] = os.getenv("GOOGLE_API_KEY")
+            
+            logger.debug(f"Completion params: {completion_params}")
             
             if request.stream:
                 return self._handle_streaming_response(completion(**completion_params))
@@ -61,6 +59,7 @@ class LLMService:
                 response = completion(**completion_params)
                 return response
         except Exception as e:
+            logger.error(f"Error creating chat completion: {str(e)}")
             raise Exception(f"Error creating chat completion: {str(e)}")
 
     async def _handle_streaming_response(self, response_stream) -> AsyncGenerator[str, None]:

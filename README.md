@@ -1,16 +1,20 @@
 # LLM Proxy Service
 
-A FastAPI-based proxy service for LLM model requests using LiteLLM.
+A FastAPI-based proxy service for LLM model requests using LiteLLM, with observability powered by Arize Phoenix.
 
 ## Features
 
 - OpenAI-compatible API endpoints
-- JWT token authentication
-- Support for multiple LLM providers through LiteLLM
+- JWT token authentication via Auth0
+- Support for multiple LLM providers through LiteLLM:
+  - OpenAI
+  - Azure OpenAI
+  - Anthropic
+  - Google Gemini
+- Observability and evaluation using Arize Phoenix
 - Docker support
 - Environment variable configuration
 - Poetry for dependency management
-- HashiCorp Vault integration for secrets management
 
 ## Project Structure
 
@@ -35,7 +39,11 @@ llm-proxy-service/
 │       └── llm_service.py
 ├── pyproject.toml
 ├── README.md
-└── Dockerfile
+├── Dockerfile
+├── start.sh
+├── start_phoenix.sh
+├── stop.sh
+└── start_phoenix.py
 ```
 
 ## Setup
@@ -43,13 +51,22 @@ llm-proxy-service/
 ### Local Development
 
 1. Clone the repository
-2. Create a `.env` file with the following variables:
+2. Create a `local.env` file with the following variables:
    ```
-   JWT_SECRET_KEY=your-super-secret-key-change-in-production
-   OPENAI_API_KEY=your-openai-api-key
-   ANTHROPIC_API_KEY=your-anthropic-api-key
+   # Auth0 Configuration
    AUTH0_DOMAIN=your-auth0-domain
    AUTH0_AUDIENCE=your-auth0-audience
+
+   # Azure OpenAI Configuration
+   AZURE_API_KEY=your-azure-api-key
+   AZURE_API_BASE=your-azure-api-base
+
+   # Phoenix Configuration
+   PHOENIX_PROJECT_NAME=llm-proxy-service
+   PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006
+
+   # Logging
+   LOG_LEVEL=INFO
    ```
 
 3. Install dependencies using Poetry:
@@ -57,61 +74,35 @@ llm-proxy-service/
    # Install Poetry if you haven't already
    curl -sSL https://install.python-poetry.org | python3 -
    
-   # Install dependencies
-   poetry install
+   # Install dependencies with Phoenix support
+   poetry install --with phoenix
    ```
 
-### HashiCorp Vault Setup
-
-1. Install the Vault CLI:
+4. Make the scripts executable:
    ```bash
-   # For macOS
-   brew install vault
-
-   # For Linux
-   curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-   sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-   sudo apt-get update && sudo apt-get install vault
-   ```
-
-2. Login to HCP Vault:
-   ```bash
-   vault login -method=oidc
-   ```
-
-3. Store secrets in Vault:
-   ```bash
-   vault kv put secret/llm-proxy \
-     JWT_SECRET_KEY="your-super-secret-key" \
-     OPENAI_API_KEY="your-openai-api-key" \
-     ANTHROPIC_API_KEY="your-anthropic-api-key" \
-     AUTH0_DOMAIN="your-auth0-domain" \
-     AUTH0_AUDIENCE="your-auth0-audience"
+   chmod +x start.sh start_phoenix.sh stop.sh
    ```
 
 ## Running the Service
 
 ### Local Development
-```bash
-# Using Poetry
-poetry run uvicorn app.main:app --reload
 
-# Or using Python directly
-python -m uvicorn app.main:app --reload
-```
+1. Start the Phoenix server (for observability):
+   ```bash
+   ./start_phoenix.sh
+   ```
 
-### Using Docker with Vault
-```bash
-# Build the image
-docker build -t llm-proxy-service .
+2. Start the main service:
+   ```bash
+   ./start.sh
+   ```
 
-# Run the container with Vault environment variables
-docker run -p 8000:8000 \
-  -e VAULT_ADDR="https://vault.hashicorp.cloud" \
-  -e VAULT_NAMESPACE="admin" \
-  -e VAULT_TOKEN="your-vault-token" \
-  llm-proxy-service
-```
+3. To stop all services:
+   ```bash
+   ./stop.sh
+   ```
+
+The services can be started in any order, but it's recommended to start Phoenix first to ensure all requests are tracked from the beginning.
 
 ## API Usage
 
@@ -132,7 +123,7 @@ curl -X GET "http://localhost:8000/models/list"
 
 3. Make a chat completion request:
 ```bash
-curl -X POST "http://localhost:8000/models/azure/gpt-4.1-mini" \
+curl -X POST "http://localhost:8000/models/azure/gpt-4" \
      -H "Authorization: Bearer YOUR_JWT_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{
@@ -156,7 +147,7 @@ curl -X POST "http://localhost:8000/models/azure/gpt-4.1-mini" \
 {
   "id": "chatcmpl-123",
   "created": 1234567890,
-  "model": "azure/gpt-4.1-mini",
+  "model": "azure/gpt-4",
   "object": "chat.completion",
   "choices": [
     {
@@ -182,15 +173,42 @@ curl -X POST "http://localhost:8000/models/azure/gpt-4.1-mini" \
 ### List Models Response
 ```json
 {
-  "openai": ["gpt-3.5-turbo", "gpt-4"],
-  "azure": ["gpt-4.1-mini"]
+  "openai": ["gpt-4o", "gpt-4o-mini"],
+  "anthropic": ["claude-2", "claude-instant-1"],
+  "azure": ["gpt-4"],
+  "gemini": ["gemini-1.5-flash-002", "gemini-2.0-flash-lite"]
 }
 ```
 
+## Observability with Phoenix
+
+The service integrates with Arize Phoenix for LLM observability and evaluation. The Phoenix server runs on port 6006 and provides:
+
+- Request/response tracking
+- Latency monitoring
+- Error tracking
+- Token usage analytics
+- Model performance evaluation
+
+Access the Phoenix dashboard at `http://localhost:6006` when the service is running.
+
+### Starting Phoenix Server
+
+The Phoenix server can be started independently using:
+```bash
+./start_phoenix.sh
+```
+
+This script:
+- Checks if Phoenix is already running
+- Loads environment variables from local.env
+- Starts the Phoenix server in the background
+- Stores the process ID for clean shutdown
+
 ## Security Notes
 
-- Change the JWT_SECRET_KEY in production
-- Configure CORS settings appropriately in production
-- Secure your API keys using HashiCorp Vault
+- Configure Auth0 settings appropriately for your environment
+- Set appropriate CORS settings in production
+- Use environment variables for sensitive configuration
 - Consider adding rate limiting for production use
-- Use appropriate Vault policies to restrict access to secrets 
+- Monitor token usage and costs through Phoenix dashboard 

@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Poetry
+RUN pip install poetry
+
+# Copy poetry files
+COPY pyproject.toml poetry.lock ./
+
+# Copy Phoenix start script
+COPY scripts/start_phoenix.py ./scripts/
+
+# Install dependencies (only Phoenix-related ones)
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main --no-interaction --no-ansi \
+    && pip install arize-phoenix
+
+# Create data directory
+RUN mkdir -p /data/phoenix
+
+# Set environment variables
+ENV PHOENIX_DATA_PATH=/data/phoenix
+
+# Expose Phoenix port
+EXPOSE 6006
+
+# Start Phoenix server
+CMD ["python", "scripts/start_phoenix.py", "--host", "0.0.0.0", "--port", "6006"] 
