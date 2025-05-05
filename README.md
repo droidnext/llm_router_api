@@ -2,6 +2,22 @@
 
 A FastAPI-based proxy service for LLM model requests using LiteLLM, with observability powered by Arize Phoenix.
 
+## Related Blog Posts
+
+This project is part of a series of blog posts about building a Generative AI infrastructure:
+
+1. [Building the Generative AI Spaceship While Flying It](https://medium.com/@droidnext/building-the-generative-ai-spaceship-while-flying-it-818a057b4409)
+   - Overview of the project and its goals
+   - Initial architecture and design decisions
+
+2. [Building the Generative AI Spaceship (Part 2): Architecting the LLM Engine](https://medium.com/@droidnext/building-the-generative-ai-spaceship-part-2-architecting-the-llm-engine-9469bb43bdec)
+   - Detailed architecture of the LLM engine
+   - Design patterns and best practices
+
+3. [Building the Generative AI Spaceship (Part 2.1): Building LLM Engine](https://medium.com/@droidnext/building-the-generative-ai-spaceship-part-2-1-building-llm-engine-980e9b9b93e2)
+   - Implementation details and code walkthrough
+   - Practical examples and use cases
+
 ## Features
 
 - OpenAI-compatible API endpoints
@@ -211,4 +227,20 @@ This script:
 - Set appropriate CORS settings in production
 - Use environment variables for sensitive configuration
 - Consider adding rate limiting for production use
-- Monitor token usage and costs through Phoenix dashboard 
+- Monitor token usage and costs through Phoenix dashboard
+
+## Related Blog Posts
+
+This project is part of a series of blog posts about building a Generative AI infrastructure:
+
+1. [Building the Generative AI Spaceship While Flying It](https://medium.com/@droidnext/building-the-generative-ai-spaceship-while-flying-it-818a057b4409)
+   - Overview of the project and its goals
+   - Initial architecture and design decisions
+
+2. [Building the Generative AI Spaceship (Part 2): Architecting the LLM Engine](https://medium.com/@droidnext/building-the-generative-ai-spaceship-part-2-architecting-the-llm-engine-9469bb43bdec)
+   - Detailed architecture of the LLM engine
+   - Design patterns and best practices
+
+3. [Building the Generative AI Spaceship (Part 2.1): Building LLM Engine](https://medium.com/@droidnext/building-the-generative-ai-spaceship-part-2-1-building-llm-engine-980e9b9b93e2)
+   - Implementation details and code walkthrough
+   - Practical examples and use cases 
